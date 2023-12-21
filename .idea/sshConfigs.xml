@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SshConfigs">
-    <configs>
-      <sshConfig host="meteo" id="b8aa2ce7-d3b7-45e9-b8e6-4344fc9ef74b" keyPath="$USER_HOME$/.ssh/dev" port="2222" nameFormat="DESCRIPTIVE" username="meteo" useOpenSSHConfig="true" />
-    </configs>
-  </component>
-</project>
