@@ -12,7 +12,7 @@ from build_wave_file import get_wave_file_list, join_wave_files
 
 
 class Broadcaster:
-    def __init__(self, station_id, query_delay=5):
+    def __init__(self, station_id, query_delay=3):
         self.station_id = station_id
         self.minimum_delay = query_delay
 
@@ -29,7 +29,15 @@ class Broadcaster:
         if play is None:
             raise Exception("Could not find 'play' command. Please install 'sox' and make sure 'play' is in your path.")
 
-        out = run(play + " " + out_file, shell=True, capture_output=True)
+        if play_command == "play":
+            play += " -q"
+
+        command = play + " " + out_file
+        print(f"{command} ... ", end="", flush=True)
+        out = run(command, shell=True, capture_output=True)
+        if out.returncode != 0:
+            raise Exception(f"Could not play file {out_file}: {out.stderr.decode('utf-8')}")
+        print("done.", flush=True)
         Path.unlink(Path(out_file))
         return out, file_list
 
@@ -40,31 +48,40 @@ class Broadcaster:
 
         while not sigint_handler_event.is_set():
             i += 1
-            now = self._now_utc()
-            diff = now - last_record_date
-            minimum_wait_time = round(9.98 * 60.0)
+            diff = self._now_utc() - last_record_date
+            estimated_wait_time = round(10.0 * 60.0 + 4.0)
 
             if not first_run:
-                wait_time = max(minimum_wait_time - round(diff), self.minimum_delay)
-                print(f"Waiting {wait_time} seconds for next record")
-                sigint_handler_event.wait(wait_time)
+                wait_time = max(estimated_wait_time - round(diff), self.minimum_delay)
+                print(f"Waiting {wait_time} seconds before next query", flush=True)
+                sigint_handler_event.wait(float(wait_time))
 
-            first_run = False
             api_data = get('http://api.pioupiou.fr/v1/live/%s' % self.station_id).json()
 
-            last_record_date = datetime.strptime(api_data["data"]['measurements']["date"],
-                                                 "%Y-%m-%dT%H:%M:%S.%fZ").timestamp()
+            new_record_date = datetime.strptime(
+                api_data["data"]['measurements']["date"],
+                "%Y-%m-%dT%H:%M:%S.%fZ").timestamp()
+
+            if not first_run and new_record_date <= last_record_date:
+                continue
+
             new_wind_data = api_data["data"]['measurements']
 
-            print(f"{new_wind_data['date']} UTC: Avg {new_wind_data['wind_speed_avg']}, max {new_wind_data['wind_speed_max']}, "
-                  f"heading {new_wind_data['wind_heading']}")
+            print(
+                f"{new_wind_data['date']} UTC: "
+                f"Avg {new_wind_data['wind_speed_avg']}, "
+                f"max {new_wind_data['wind_speed_max']}, "
+                f"heading {new_wind_data['wind_heading']}",
+                flush=True
+            )
 
             self.broadcast(api_data["data"]['measurements'])
+            last_record_date = new_record_date
 
-            last_date = last_record_date
+            first_run = False
+
             if max_iterations and i >= max_iterations:
                 break
-
 
 
 if __name__ == "__main__":
