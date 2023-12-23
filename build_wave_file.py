@@ -1,41 +1,38 @@
-import wave
+from wave import open as wave_open
 from os.path import isfile
+
+sound_dir = "wav"
 
 
 def get_wave_file_list(wind_speed_avg, wind_speed_max, wind_heading):
-    avg_wind_files = get_wind_speed_files(wind_speed_avg)
-    max_wind_files = get_wind_speed_files(wind_speed_max)
-
-    files = [
-        "wav/indi.mus.wav",
-        "wav/w-aktuell.mus.wav",
-        "wav/durchschnitt_kurz.mus.wav",
-        "wav/r-" + deg_to_compass(wind_heading) + ".mus.wav",
-        *avg_wind_files,
-        "wav/kmh.mus.wav",
-        "wav/boe-kurz.mus.wav",
-        *max_wind_files,
-        "wav/kmh.mus.wav",
-        "wav/bye.mus.wav",
+    return [
+        sound_dir + "/indi.mus.wav",
+        sound_dir + "/w-aktuell.mus.wav",
+        sound_dir + "/durchschnitt_kurz.mus.wav",
+        sound_dir + "/r-" + deg_to_compass(wind_heading) + ".mus.wav",
+        *get_wind_speed_files(wind_speed_avg),
+        sound_dir + "/kmh.mus.wav",
+        sound_dir + "/boe-kurz.mus.wav",
+        *get_wind_speed_files(wind_speed_max),
+        sound_dir + "/kmh.mus.wav",
+        sound_dir + "/bye.mus.wav",
     ]
-    return files
 
 
-def get_wind_speed_files(wind_speed):
-    wind_speed = round(wind_speed)
+def get_wind_speed_files(value):
+    value = round(value)
     files = []
 
-    if wind_speed >= 100:
-        file_name = "wav/{}.mus.wav".format((wind_speed // 100) * 100)
-        wind_speed %= 100
+    if value >= 100:
+        file_name = "{}/{}.mus.wav".format(sound_dir, (value // 100) * 100)
+        value %= 100
         if isfile(file_name):
             files.append(file_name)
 
-        # avoid "hundert null kmh"
-        if wind_speed == 0:
+        if value == 0:
             return files
 
-    for i in range(wind_speed, 100):
+    for i in range(value, 100):
         file_name = "wav/{}.mus.wav".format(i)
         if isfile(file_name):
             files.append(file_name)
@@ -44,21 +41,19 @@ def get_wind_speed_files(wind_speed):
     return files
 
 
-def deg_to_compass(num):
-    val = int((num / 22.5) + .5)
+def deg_to_compass(deg):
+    val = int((deg / 22.5) + .5)
     arr = ["n", "nno", "no", "ono", "o", "oso", "so", "sso", "s", "ssw", "sw", "wsw", "w", "wnw", "nw", "nnw"]
     return arr[(val % 16)]
 
 
-def join_wave_files(input_files, output_file):
-    data = []
-    for infile in input_files:
-        w = wave.open(infile, 'rb')
-        data.append([w.getparams(), w.readframes(w.getnframes())])
-        w.close()
+def join_wave_files(input_files_list, output_file_path):
+    files = []
+    for infile in input_files_list:
+        with wave_open(infile, 'rb') as reader:
+            files.append([reader.getparams(), reader.readframes(reader.getnframes())])
 
-    output = wave.open(output_file, 'wb')
-    output.setparams(data[0][0])
-    for i in range(len(data)):
-        output.writeframes(data[i][1])
-    output.close()
+    with wave_open(output_file_path, 'wb') as writer:
+        writer.setparams(files[0][0])
+        for i in range(len(files)):
+            writer.writeframes(files[i][1])
