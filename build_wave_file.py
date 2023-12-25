@@ -1,21 +1,21 @@
 from wave import open as wave_open
 from os.path import isfile
 
-sound_dir = "wav"
+SOUND_DIR = "wav"
 
 
 def get_wave_file_list(wind_speed_avg, wind_speed_max, wind_heading):
     return [
-        sound_dir + "/indi.mus.wav",
-        sound_dir + "/w-aktuell.mus.wav",
-        sound_dir + "/durchschnitt_kurz.mus.wav",
-        sound_dir + "/r-" + deg_to_compass(wind_heading) + ".mus.wav",
+        SOUND_DIR + "/indi.mus.wav",
+        SOUND_DIR + "/w-aktuell.mus.wav",
+        SOUND_DIR + "/durchschnitt_kurz.mus.wav",
+        SOUND_DIR + "/r-" + deg_to_compass(wind_heading) + ".mus.wav",
         *get_wind_speed_files(wind_speed_avg),
-        sound_dir + "/kmh.mus.wav",
-        sound_dir + "/boe-kurz.mus.wav",
+        SOUND_DIR + "/kmh.mus.wav",
+        SOUND_DIR + "/boe-kurz.mus.wav",
         *get_wind_speed_files(wind_speed_max),
-        sound_dir + "/kmh.mus.wav",
-        sound_dir + "/bye.mus.wav",
+        SOUND_DIR + "/kmh.mus.wav",
+        SOUND_DIR + "/bye.mus.wav",
     ]
 
 
@@ -24,7 +24,7 @@ def get_wind_speed_files(value):
     files = []
 
     if value >= 100:
-        file_name = "{}/{}.mus.wav".format(sound_dir, (value // 100) * 100)
+        file_name = f"{SOUND_DIR}/{(value // 100) * 100}.mus.wav"
         value %= 100
         if isfile(file_name):
             files.append(file_name)
@@ -33,7 +33,7 @@ def get_wind_speed_files(value):
             return files
 
     for i in range(value, 100):
-        file_name = "wav/{}.mus.wav".format(i)
+        file_name = f"wav/{i}.mus.wav"
         if isfile(file_name):
             files.append(file_name)
             break
@@ -43,7 +43,11 @@ def get_wind_speed_files(value):
 
 def deg_to_compass(deg):
     val = int((deg / 22.5) + .5)
-    arr = ["n", "nno", "no", "ono", "o", "oso", "so", "sso", "s", "ssw", "sw", "wsw", "w", "wnw", "nw", "nnw"]
+    arr = ["n", "nno", "no",
+           "ono", "o", "oso",
+           "so", "sso", "s", "ssw", "sw",
+           "wsw", "w", "wnw",
+           "nw", "nnw"]
     return arr[(val % 16)]
 
 
@@ -51,9 +55,11 @@ def join_wave_files(input_files_list, output_file_path):
     files = []
     for infile in input_files_list:
         with wave_open(infile, 'rb') as reader:
+            # pylint: disable=no-member
             files.append([reader.getparams(), reader.readframes(reader.getnframes())])
 
     with wave_open(output_file_path, 'wb') as writer:
+        # pylint: disable=no-member
         writer.setparams(files[0][0])
-        for i in range(len(files)):
-            writer.writeframes(files[i][1])
+        for file_data in files:
+            writer.writeframes(file_data[1])

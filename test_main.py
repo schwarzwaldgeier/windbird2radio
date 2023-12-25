@@ -1,8 +1,6 @@
 import unittest
-from asyncio import Event
-from signal import SIGINT
 from unittest.mock import patch, Mock
-
+from os import environ
 from main import get_sigint_handler, get_config, main
 
 
@@ -32,7 +30,7 @@ class TestMain(unittest.TestCase):
         assert handler.is_set()
 
     def test_get_config(self):
+        test_id = 'test_station_id'
+        environ['STATION_ID'] = test_id
         conf = get_config()
-        assert conf is not None
-        assert conf.get('station_id') is not None
-        pass
+        assert conf.get('station_id') == test_id

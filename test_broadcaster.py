@@ -133,13 +133,13 @@ class TestBroadcaster(unittest.TestCase):
         mock_get_timestamp.return_value = 1234567890
         broadcaster.minimum_delay = 0.0
 
-        broadcasted = broadcaster.listen(sigint_handler_event=Event(), max_iterations=2, wait_time=0.0)
+        broadcasted = broadcaster.listen(sigint_handler_event=Event(), max_iterations=2, estimated_wait_time=0.0)
         assert "Avg" in broadcasted
         assert "max" in broadcasted
         assert "heading" in broadcasted
 
         mock_check_sanity.side_effect = AssertionError
-        broadcasted = broadcaster.listen(sigint_handler_event=Event(), max_iterations=2, wait_time=0.0)
+        broadcasted = broadcaster.listen(sigint_handler_event=Event(), max_iterations=2, estimated_wait_time=0.0)
         assert broadcasted is None
 
     def test_get_timestamp(self):

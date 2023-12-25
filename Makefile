@@ -1,0 +1,33 @@
+default: help
+
+.PHONY: help
+## help: this help message
+all: help
+help: Makefile
+	@echo "Usage: \n"
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /'
+
+.PHONY: install
+## install: install required packages
+install:
+	pip install -r requirements.txt
+
+.PHONY: run
+## run: run listener
+run:
+	python main.py
+
+.PHONY: lint
+## lint: run linter
+lint:
+	pylint **/*.py
+
+.PHONY: test
+## test: run pytest (install-dev required)
+test:
+	pytest
+
+.PHONY: test-cov
+## test-cov: run pytest with coverage (install-dev required)
+test-cov:
+	pytest --cov

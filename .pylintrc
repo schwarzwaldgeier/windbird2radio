@@ -1,0 +1,12 @@
+[MESSAGES CONTROL]
+disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,too-few-public-methods
+
+[FORMAT]
+max-line-length=240
+
+[MASTER]
+ignore-pattern=test_.*?py
+extension-pkg-whitelist=pydantic
+
+[BASIC]
+good-names=id,i
