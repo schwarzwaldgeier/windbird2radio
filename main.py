@@ -9,7 +9,6 @@ def get_sigint_handler():
     waiter = Event()
 
     def sigint_handler(signum, frame):
-        print(f"Received signal {signum} in frame {frame}")
         waiter.set()
 
     signal(SIGINT, sigint_handler)

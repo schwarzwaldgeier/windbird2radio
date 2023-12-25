@@ -1,7 +1,12 @@
+import signal
+import subprocess
+import threading
 import unittest
+from time import sleep
 from unittest.mock import patch, Mock
 from os import environ
 from main import get_sigint_handler, get_config, main
+from psutil import pid_exists
 
 
 class TestMain(unittest.TestCase):
@@ -34,3 +39,6 @@ class TestMain(unittest.TestCase):
         environ['STATION_ID'] = test_id
         conf = get_config()
         assert conf.get('station_id') == test_id
+
+
+

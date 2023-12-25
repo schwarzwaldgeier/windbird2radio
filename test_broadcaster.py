@@ -1,6 +1,8 @@
 import json
+import subprocess
 import unittest
 from multiprocessing import Event
+from shutil import which
 from time import sleep
 from unittest.mock import patch, MagicMock
 
@@ -146,3 +148,10 @@ class TestBroadcaster(unittest.TestCase):
         broadcaster = Broadcaster('test_station')
         timestamp = broadcaster._get_timestamp(self.mock_data)
         assert timestamp == 1703331667.0
+
+    def test_play_command_exists(self):
+        play = which('play')
+        assert play is not None
+        pv = subprocess.run(f"{play} --version", shell=True, capture_output=True, check=False)
+        assert pv.returncode == 0
+        assert "SoX" in str(pv.stdout)

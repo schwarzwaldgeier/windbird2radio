@@ -33,21 +33,26 @@ class TestBuildWaveFile:
             assert isfile(file_names[0])
 
     def test_deg_to_compass(self):
-        deg = 90
-        compass = bwf.deg_to_compass(deg)
-        assert compass == "o"
+        def test(degree, expected):
+            assert bwf.deg_to_compass(degree) == expected
 
-        deg = 180
-        compass = bwf.deg_to_compass(deg)
-        assert compass == "s"
-
-        deg = 180.123456
-        compass = bwf.deg_to_compass(deg)
-        assert compass == "s"
-
-        deg = 270
-        compass = bwf.deg_to_compass(deg)
-        assert compass == "w"
+        test(0, "n"),
+        test(22.5, "nno"),
+        test(45, "no"),
+        test(67.5, "ono"),
+        test(90, "o"),
+        test(112.5, "oso"),
+        test(135, "so"),
+        test(157.5, "sso"),
+        test(180, "s"),
+        test(202.5, "ssw"),
+        test(225, "sw"),
+        test(247.5, "wsw"),
+        test(270, "w"),
+        test(292.5, "wnw"),
+        test(315, "nw"),
+        test(337.5, "nnw"),
+        test(360, "n")
 
         for deg in range(0, 360):
             compass = bwf.deg_to_compass(deg)
@@ -56,7 +61,7 @@ class TestBuildWaveFile:
 
     def test_join_wave_files(self):
         input_files = bwf.get_wave_file_list(23, 54, 90)
-        output_file = "temp/test.wav"
+        output_file = "test.wav"
         bwf.join_wave_files(input_files, output_file)
         assert isfile(output_file)
         remove(output_file)

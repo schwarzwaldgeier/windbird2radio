@@ -26,13 +26,12 @@ class Broadcaster:
         out_file = "combined.wav"
         join_wave_files(file_list, out_file)
         command_parts = play_command.split(" ")
-        command_params = command_parts[1:]
-        command_bin = command_parts[0]
-        command_path = which(command_bin)
+        command_path = which(command_parts[0])
         if command_path is None:
-            raise FileNotFoundError(f"Could not find command {command_bin}")
+            raise FileNotFoundError(f"Could not find command {command_parts[0]}")
 
-        command = command_path + " " + " ".join(command_params) + " " + out_file
+        command = f"{command_path} {' '.join(command_parts[1:])} {out_file}"
+
         print(f"{command} ... ", end="", flush=True)
         out = run(command, shell=True, capture_output=True, check=False)
         if out.returncode != 0:
