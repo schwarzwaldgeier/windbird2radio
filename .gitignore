@@ -2,7 +2,7 @@
 /.idea/
 /.temp/
 combined.wav
-
+.env.local
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template

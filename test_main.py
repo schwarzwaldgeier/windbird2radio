@@ -1,62 +1,38 @@
 import unittest
+from asyncio import Event
+from signal import SIGINT
+from unittest.mock import patch, Mock
 
-from main import Broadcaster
+from main import get_sigint_handler, get_config, main
 
 
-class TestBroadcaster(unittest.TestCase):
-    mock_data = {
-        "doc": "http://developers.pioupiou.fr/api/live/",
-        "license": "http://developers.pioupiou.fr/data-licensing",
-        "attribution": "(c) contributors of the Pioupiou wind network <http://pioupiou.fr>",
-        "data": {
-            "id": 1333,
-            "meta": {
-                "name": "Wetterstation Schwarzwaldgeier"
-            },
-            "location": {
-                "latitude": 48.764463,
-                "longitude": 8.280487,
-                "date": "2023-12-22T10:31:55.000Z",
-                "success": "true",
-                "hdop": 1
-            },
-            "measurements": {
-                "date": "2023-12-23T12:41:07.000Z",
-                "pressure": "null",
-                "wind_heading": 225,
-                "wind_speed_avg": 72.5,
-                "wind_speed_max": 99,
-                "wind_speed_min": 47
-            },
-            "status": {
-                "date": "2023-12-23T12:41:07.000Z",
-                "snr": -1,
-                "state": "on"
-            }
-        }
-    }
+class TestMain(unittest.TestCase):
 
-    def test_broadcast(self):
-        broadcaster = Broadcaster('test_station')
-        out, file_list = broadcaster.broadcast(self.mock_data["data"]["measurements"], "file")
-        assert out
-        assert "WAVE audio" in str(out.stdout)
-        assert file_list
+    @patch('main.get_sigint_handler')
+    @patch('main.get_config')
+    @patch('main.Broadcaster')
+    def test_main(self, mock_broadcaster, mock_get_config, mock_get_sigint_handler):
+        mock_sigint_handler = Mock()
+        mock_get_sigint_handler.return_value = mock_sigint_handler
+        mock_config = {'station_id': 'test_station_id', 'user_agent': 'test_user_agent'}
+        mock_get_config.return_value = mock_config
 
-        assert file_list == ['wav/indi.mus.wav',
-                             'wav/w-aktuell.mus.wav',
-                             'wav/durchschnitt_kurz.mus.wav',
-                             'wav/r-sw.mus.wav',
-                             'wav/72.mus.wav',
-                             'wav/kmh.mus.wav',
-                             'wav/boe-kurz.mus.wav',
-                             'wav/99.mus.wav',
-                             'wav/kmh.mus.wav',
-                             'wav/bye.mus.wav']
+        main()
 
-    def test_no_play_command_raises_exception(self):
-        broadcaster = Broadcaster('test_station')
-        with self.assertRaises(Exception):
-            broadcaster.broadcast(
-                self.mock_data["data"]["measurements"],
-                "windows_media_player_mock_fake_edition")
+        mock_get_sigint_handler.assert_called_once()
+        mock_get_config.assert_called_once()
+        mock_broadcaster.assert_called_once_with('test_station_id')
+        mock_broadcaster_instance = mock_broadcaster.return_value
+        mock_broadcaster_instance.listen.assert_called_once_with(sigint_handler_event=mock_sigint_handler)
+
+    def test_sigint_handler(self):
+        handler = get_sigint_handler()
+        assert not handler.is_set()
+        handler.set()
+        assert handler.is_set()
+
+    def test_get_config(self):
+        conf = get_config()
+        assert conf is not None
+        assert conf.get('station_id') is not None
+        pass
