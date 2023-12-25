@@ -23,11 +23,11 @@ lint:
 	pylint **/*.py
 
 .PHONY: test
-## test: run pytest (install-dev required)
+## test: run pytest
 test:
 	pytest
 
 .PHONY: test-cov
-## test-cov: run pytest with coverage (install-dev required)
+## test-cov: run pytest with coverage
 test-cov:
 	pytest --cov
