@@ -9,7 +9,7 @@ def get_sigint_handler():
     waiter = Event()
 
     def sigint_handler(signum, frame):
-        waiter.set()
+        waiter.set() # pragma: no cover
 
     signal(SIGINT, sigint_handler)
     return waiter
@@ -34,4 +34,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
