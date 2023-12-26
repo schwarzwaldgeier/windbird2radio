@@ -97,7 +97,7 @@ class Broadcaster:
         return report
 
     def _get_timestamp(self, api_data):
-        utc_dt= datetime.strptime(
+        utc_dt = datetime.strptime(
             api_data["data"]['measurements']["date"],
             "%Y-%m-%dT%H:%M:%S.%fZ")
         return (utc_dt - datetime(1970, 1, 1)).total_seconds()

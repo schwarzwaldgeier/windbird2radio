@@ -8,8 +8,9 @@ from broadcaster import Broadcaster
 def get_sigint_handler():
     waiter = Event()
 
+    # pylint: disable=unused-argument
     def sigint_handler(signum, frame):
-        waiter.set() # pragma: no cover
+        waiter.set()  # pragma: no cover
 
     signal(SIGINT, sigint_handler)
     return waiter
